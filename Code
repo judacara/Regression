@@ -1,0 +1,108 @@
+-------------------------------------------Libraries
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
+import statsmodels.formula.api as smf
+from math import e
+
+---------------------------------------Reading and Exploring Trainning Data / Correlation Study
+
+
+df = pd.read_excel('Data.xlsx')
+df.columns
+
+df.drop(["id", "fecha_siembra", "rango_semilla"],axis='columns',inplace=True)
+
+for item in df:
+    mean_value = df[item].mean()
+    df.fillna(mean_value, inplace=True)
+corr_df = df.corr()
+corr_df.sort_values(by='productividad', inplace= True)
+corr_df['productividad']
+
+
+
+df = pd.read_excel('Data.xlsx')
+
+df = df.dropna()
+corr_df = df.corr()
+corr_df.sort_values(by='productividad', inplace= True)
+corr_df['productividad']
+
+
+
+plt.scatter(df['score_nutrientes_preforza'], df['productividad'])
+plt.scatter(df['score_phytophtora_preforza'], df['productividad'])
+plt.scatter(df['score_induccion_resistencia'], df['productividad'])
+plt.scatter(df['score_fusarium_posforza'], df['productividad'])
+plt.scatter(df['score_nutrientes_posforza_etapa1'], df['productividad'])
+plt.scatter(df['porc_mortalidad_joven'], df['productividad'])
+plt.scatter(df['mean_pp'], df['productividad'])
+plt.scatter(df['score_herbicidas_preforza''], df['productividad'])
+plt.scatter(df['phytophtora_min'], df['productividad'])
+plt.scatter(df['edad_forza'], df['productividad'])
+plt.scatter(df['phytophtora_max'], df['productividad'])
+plt.scatter(df['Gomosis_max'], df['productividad'])
+plt.scatter(df['Erwinia_max_pref'], df['productividad'])
+plt.scatter(df['score_thielaviopsis_preforza'], df['productividad'])
+plt.scatter(df['score_crecimiento_preforza'], df['productividad'])
+
+plt.hist(df['score_nutrientes_preforza'])
+plt.hist(df['score_phytophtora_preforza'])
+plt.hist(df['score_induccion_resistencia'])
+plt.hist(df['score_fusarium_posforza'])
+plt.hist(df['score_nutrientes_posforza_etapa1'])
+plt.hist(df['porc_mortalidad_joven'])
+plt.hist(df['mean_pp'])
+plt.hist(df['score_herbicidas_preforza''])
+plt.hist(df['phytophtora_min'])
+plt.hist(df['edad_forza'])
+plt.hist(df['phytophtora_max'])
+plt.hist(df['Gomosis_max'])
+plt.hist(df['Erwinia_max_pref'])
+plt.hist(df['score_thielaviopsis_preforza'])
+plt.hist(df['score_crecimiento_preforza'])
+
+
+
+
+---------------------------------------Linear Regression Model
+
+df=df[['score_nutrientes_preforza', 'score_phytophtora_preforza', 'score_induccion_resistencia',
+      'score_fusarium_posforza', 'score_nutrientes_posforza_etapa1', 'porc_mortalidad_joven', 'mean_pp',
+      'score_herbicidas_preforza', 'phytophtora_min', 'edad_forza', 'phytophtora_max', 'Gomosis_max',
+      'Erwinia_max_pref', 'score_thielaviopsis_preforza', 'score_crecimiento_preforza', 'productividad']]
+
+df['score_phytophtora_preforza'] = np.log(df['score_phytophtora_preforza'])
+
+
+df = df[(df['score_phytophtora_preforza'] > 0)]
+
+df = df[(df['score_herbicidas_preforza'] <= 6)]
+
+df = df[(df['phytophtora_min_pref'] < 0.05)]
+
+df = df[(df['score_nutrientes_posforza_etapa1'] > 0.5)]
+df = df[(df['mean_pp'] > 700)]
+df = df[(df['edad_forza'] < 12)]
+df = df[(df['Erwinia_max_pref'] < 0.01)]
+
+model_abs = LinearRegression()
+
+d=df[['score_nutrientes_preforza', 'score_phytophtora_preforza', 'score_induccion_resistencia',
+      'score_fusarium_posforza', 'score_nutrientes_posforza_etapa1', 'porc_mortalidad_joven', 'mean_pp',
+      'score_herbicidas_preforza', 'phytophtora_min', 'edad_forza', 'phytophtora_max', 'Gomosis_max',
+      'Erwinia_max_pref', 'score_thielaviopsis_preforza', 'score_crecimiento_preforza', 'Botones',
+      'phytophtora_min_pref', 'preparacion_diferencial', 'Meristemo', 'Gusano soldado_max',
+      'Gomosis_min', 'score_cochinilla_posforza1', 'Cochinilla_max']]
+i=df['productividad']
+model_abs.fit(d, i)
+i_pred = model_abs.predict(d)
+print(mean_squared_error(i, i_pred))
